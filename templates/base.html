@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Fraud Detector{% endblock %}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5f5;
+    }
+    nav {
+      background: #ff6b35;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      color: white;
+    }
+    nav .logo {
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    nav .menu {
+      display: flex;
+      gap: 20px;
+      list-style: none;
+    }
+    nav .menu a {
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    nav .menu a:hover {
+      opacity: 0.8;
+    }
+    nav .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+    .alerts {
+      margin-bottom: 20px;
+    }
+    .alert {
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .alert-error { background: #fee; color: #c33; border: 1px solid #fcc; }
+    .alert-success { background: #efe; color: #3c3; border: 1px solid #cfc; }
+    .alert-warning { background: rgb(191, 224, 235); color: rgb(4, 49, 250); border: 1px solid rgb(119, 218, 238); }
+  </style>
+  {% block styles %}{% endblock %}
+</head>
+<body>
+  <nav>
+    <div class="logo">
+      🛡️ Fraud Detector
+    </div>
+    <ul class="menu">
+      {% if session.get('role') == 'admin' %}
+        <li><a href="{{ url_for('admin_dashboard') }}">👨‍💼 Admin Dashboard</a></li>
+      {% else %}
+        <li><a href="{{ url_for('dashboard') }}">📊 Dashboard</a></li>
+        <li><a href="{{ url_for('predict') }}">🔍 Predict</a></li>
+        <li><a href="{{ url_for('analytics') }}">📈 Analytics</a></li>
+      {% endif %}
+      <li><a href="{{ url_for('model_info') }}">ℹ️ Model Info</a></li>
+      <li><a href="{{ url_for('logout') }}">🚪 Logout</a></li>
+    </ul>
+    <div class="user-menu">
+      <span>{{ session.get('username') }}</span>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="alerts">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

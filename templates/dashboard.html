@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block styles %}
+<style>
+  .stat-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+  }
+  .stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .stat-card h3 {
+    color: #666;
+    font-size: 12px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .stat-card .number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #ff6b35;
+  }
+  .card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+  }
+  .card h2 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 18px;
+    border-bottom: 2px solid #ff6b35;
+    padding-bottom: 10px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  th {
+    background: #f9f9f9;
+    padding: 10px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 1px solid #ddd;
+  }
+  td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+  }
+  .badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-fraud { background: #fee; color: #c33; }
+  .badge-legit { background: #efe; color: #3c3; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>📊 Your Dashboard</h1>
+
+<div class="stat-cards">
+  <div class="stat-card">
+    <h3>📊 Total Transactions</h3>
+    <div class="number">{{ total }}</div>
+  </div>
+  <div class="stat-card">
+    <h3>🚨 Fraud Detected</h3>
+    <div class="number" style="color:#f44336;">{{ fraud }}</div>
+  </div>
+  <div class="stat-card">
+    <h3>✅ Legitimate</h3>
+    <div class="number" style="color:#4caf50;">{{ legit }}</div>
+  </div>
+  <div class="stat-card">
+    <h3>📈 Avg Risk Score</h3>
+    <div class="number">{{ avg_score }}%</div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>⏰ Recent Transactions</h2>
+  {% if transactions %}
+  <table>
+    <tr>
+      <th>#</th>
+      <th>Amount (₹)</th>
+      <th>Hour</th>
+      <th>Location</th>
+      <th>Device</th>
+      <th>Score (%)</th>
+      <th>Result</th>
+      <th>Time</th>
+    </tr>
+    {% for txn in transactions %}
+    <tr>
+      <td>{{ txn['id'] }}</td>
+      <td>{{ "%.2f"|format(txn['amount']) }}</td>
+      <td>{{ txn['hour'] }}:00</td>
+      <td>Location {{ txn['location'] }}</td>
+      <td>Device {{ txn['device'] }}</td>
+      <td>{{ "%.1f"|format(txn['final_score']) }}</td>
+      <td>
+        {% if txn['result'] == 'Fraud' %}
+          <span class="badge badge-fraud">🚨 FRAUD</span>
+        {% else %}
+          <span class="badge badge-legit">✓ LEGIT</span>
+        {% endif %}
+      </td>
+      <td>{{ txn['timestamp'][:16] }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p style="color:#999;">No transactions yet. Start by <a href="{{ url_for('predict') }}">making a prediction</a>.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

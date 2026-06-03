@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block styles %}
+<style>
+  .stat-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+  }
+  .stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .stat-card h3 {
+    color: #666;
+    font-size: 12px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .stat-card .number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #ff6b35;
+  }
+  .card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+  }
+  .card h2 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 18px;
+    border-bottom: 2px solid #ff6b35;
+    padding-bottom: 10px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  th {
+    background: #f9f9f9;
+    padding: 10px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 1px solid #ddd;
+  }
+  td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+  }
+  .btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .btn-approve {
+    background: #4caf50;
+    color: white;
+  }
+  .btn-approve:hover {
+    background: #45a049;
+  }
+  .btn-reject {
+    background: #f44336;
+    color: white;
+  }
+  .btn-reject:hover {
+    background: #da190b;
+  }
+  .badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-pending { background: #ffeb3b; color: #333; }
+  .badge-approved { background: #4caf50; color: white; }
+  .badge-rejected { background: #f44336; color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>👨‍💼 Admin Dashboard</h1>
+
+<div class="stat-cards">
+  <div class="stat-card">
+    <h3>👥 Total Users</h3>
+    <div class="number">{{ total_users }}</div>
+  </div>
+  <div class="stat-card">
+    <h3>⏳ Pending Approvals</h3>
+    <div class="number">{{ pending }}</div>
+  </div>
+  <div class="stat-card">
+    <h3>📊 Total Transactions</h3>
+    <div class="number">{{ total_txn }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>👤 Pending Approvals</h2>
+  {% if pending_users %}
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Organization</th>
+      <th>Actions</th>
+    </tr>
+    {% for user in pending_users %}
+    <tr>
+      <td>{{ user['username'] }}</td>
+      <td>{{ user['email'] }}</td>
+      <td>{{ user['organization'] }}</td>
+      <td>
+        <form style="display:inline;" method="POST" action="{{ url_for('approve_user', user_id=user['id']) }}">
+          <button type="submit" class="btn btn-approve">✓ Approve</button>
+        </form>
+        <form style="display:inline;" method="POST" action="{{ url_for('reject_user', user_id=user['id']) }}">
+          <button type="submit" class="btn btn-reject">✗ Reject</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p style="color:#999;">No pending approvals.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>👥 All Users</h2>
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Organization</th>
+      <th>Status</th>
+    </tr>
+    {% for user in all_users %}
+    <tr>
+      <td>{{ user['username'] }}</td>
+      <td>{{ user['email'] }}</td>
+      <td>{{ user['organization'] }}</td>
+      <td>
+        {% if user['status'] == 'pending' %}
+          <span class="badge badge-pending">Pending</span>
+        {% elif user['status'] == 'approved' %}
+          <span class="badge badge-approved">Approved</span>
+        {% else %}
+          <span class="badge badge-rejected">Rejected</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>⏰ Recent Transactions</h2>
+  <table>
+    <tr>
+      <th>Date</th>
+      <th>User</th>
+      <th>Prediction</th>
+      <th>Status</th>
+      <th>Device</th>
+      <th>Location</th>
+    </tr>
+    {% for txn in transactions %}
+    <tr>
+      <td>{{ txn['timestamp'][:10] }}</td>
+      <td>{{ txn['username'] or 'N/A' }}</td>
+      <td>{{ txn['result'] }}</td>
+      <td>
+        {% if txn['result'] == 'Fraud' %}
+          <span style="color:red;font-weight:700;">⚠️ FRAUD</span>
+        {% else %}
+          <span style="color:green;font-weight:700;">✓ LEGIT</span>
+        {% endif %}
+      </td>
+      <td>Device {{ txn['device'] }}</td>
+      <td>Location {{ txn['location'] }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% endblock %}

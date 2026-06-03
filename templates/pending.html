@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pending Users</title>
+</head>
+
+<body>
+
+<h2>Pending Users</h2>
+
+<table border="1">
+<tr>
+    <th>Name</th>
+    <th>Email</th>
+</tr>
+
+{% for u in users %}
+{% if u.status == 'pending' %}
+<tr>
+    <td>{{ u.username }}</td>
+    <td>{{ u.email }}</td>
+</tr>
+{% endif %}
+{% endfor %}
+
+</table>
+
+</body>
+</html>

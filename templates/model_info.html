@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Model Information{% endblock %}
+
+{% block styles %}
+<style>
+  .container { max-width: 1000px; margin: 0 auto; }
+  .model-overview {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  .card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .card h3 {
+    color: #333;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #ff6b35;
+    padding-bottom: 10px;
+  }
+  .card ul { list-style: none; padding: 0; }
+  .card li { padding: 5px 0; color: #555; }
+  .card li::before { content: "✓ "; color: #ff6b35; font-weight: bold; margin-right: 5px; }
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 30px;
+  }
+  .metric {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+  .metric-label {
+    color: #666;
+    font-size: 12px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .metric-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: #ff6b35;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+  th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+  th { background: #f9f9f9; font-weight: 600; }
+  .confusion-matrix {
+    display: inline-block;
+    margin-top: 15px;
+  }
+  .confusion-matrix table {
+    border-collapse: separate;
+    border-spacing: 2px;
+  }
+  .confusion-matrix td {
+    width: 60px;
+    height: 60px;
+    text-align: center;
+    font-weight: 700;
+    border: none;
+  }
+  .tp { background: #c8e6c9; }
+  .tn { background: #c8e6c9; }
+  .fp { background: #ffccbc; }
+  .fn { background: #ffccbc; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>ℹ️ Model Information</h1>
+
+<div class="model-overview">
+  <div class="card">
+    <h3>ℹ️ Model Overview</h3>
+    <p><strong>Random Forest Classifier</strong></p>
+    <p>Our fraud detection system uses a Random Forest Classifier, an ensemble learning method that operates by constructing multiple decision trees during training and outputting the class that is the mode of the classes of the individual trees.</p>
+    <p style="margin-top: 15px;"><strong>Key Features:</strong></p>
+    <ul>
+      <li>Transaction amount</li>
+      <li>Time of transaction</li>
+      <li>Location data</li>
+      <li>Device information</li>
+      <li>User behavior patterns</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>📈 Model Performance</h3>
+    <p>Performance metrics on test dataset:</p>
+    <table>
+      <tr><td><strong>Accuracy</strong></td><td><span style="color:#ff6b35;font-weight:700;">{{ accuracy }}%</span></td></tr>
+      <tr><td><strong>Precision</strong></td><td><span style="color:#4caf50;font-weight:700;">{{ precision }}%</span></td></tr>
+      <tr><td><strong>Recall</strong></td><td><span style="color:#2196f3;font-weight:700;">{{ recall }}%</span></td></tr>
+      <tr><td><strong>F1-Score</strong></td><td><span style="color:#ff9800;font-weight:700;">{{ f1 }}%</span></td></tr>
+      <tr><td><strong>AUC-ROC</strong></td><td><span style="color:#9c27b0;font-weight:700;">{{ auc }}</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="metrics">
+  <div class="metric">
+    <div class="metric-label">Accuracy</div>
+    <div class="metric-value">{{ accuracy }}%</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Precision</div>
+    <div class="metric-value">{{ precision }}%</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Recall</div>
+    <div class="metric-value">{{ recall }}%</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">F1-Score</div>
+    <div class="metric-value">{{ f1 }}%</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>📊 Classification Report</h3>
+  <table>
+    <tr>
+      <th>Class</th>
+      <th>Precision</th>
+      <th>Recall</th>
+      <th>F1-Score</th>
+      <th>Support</th>
+    </tr>
+    <tr>
+      <td><strong>Legitimate</strong></td>
+      <td>{{ "%.2f"|format(report['0']['precision']) }}</td>
+      <td>{{ "%.2f"|format(report['0']['recall']) }}</td>
+      <td>{{ "%.2f"|format(report['0']['f1-score']) }}</td>
+      <td>{{ report['0']['support']|int }}</td>
+    </tr>
+    <tr>
+      <td><strong>Fraud</strong></td>
+      <td>{{ "%.2f"|format(report['1']['precision']) }}</td>
+      <td>{{ "%.2f"|format(report['1']['recall']) }}</td>
+      <td>{{ "%.2f"|format(report['1']['f1-score']) }}</td>
+      <td>{{ report['1']['support']|int }}</td>
+    </tr>
+  </table>
+</div>
+
+<div class="card">
+  <h3>🔲 Confusion Matrix</h3>
+  <p>The confusion matrix shows how many legitimate and fraudulent transactions were correctly or incorrectly classified.</p>
+  <div class="confusion-matrix">
+    <table>
+      <tr>
+        <td></td>
+        <td><strong>Predicted Legit</strong></td>
+        <td><strong>Predicted Fraud</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Actually Legit</strong></td>
+        <td class="tn"><strong>{{ tn }}</strong><br>(True Negative)</td>
+        <td class="fp"><strong>{{ fp }}</strong><br>(False Positive)</td>
+      </tr>
+      <tr>
+        <td><strong>Actually Fraud</strong></td>
+        <td class="fn"><strong>{{ fn }}</strong><br>(False Negative)</td>
+        <td class="tp"><strong>{{ tp }}</strong><br>(True Positive)</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
